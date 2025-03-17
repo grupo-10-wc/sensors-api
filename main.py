@@ -2,7 +2,8 @@ from app.sensor import models
 from app.sensor import controller as sensor
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .core.database import engine
+from app.core.database import engine
+import uvicorn
 import asyncio
 
 
@@ -33,3 +34,10 @@ app.include_router(sensor.router, prefix='/api/sensors')
 @app.get("/api/healthchecker")
 def root():
     return {"message": "Welcome to FastAPI with SQLAlchemy"}
+
+def main():
+    uvicorn.run(app)
+    return None
+
+if __name__ == "__main__":
+    main()
