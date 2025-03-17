@@ -49,3 +49,10 @@ async def mock_fluke1735(
     db: AsyncSession = Depends(get_db)
 ):
     return await service.mock_fluke1735(db, days)
+
+@router.get('/mock/shellyEM')
+async def shelly_em(
+    days: int = 1,
+    db: AsyncSession = Depends(get_db)
+):
+    return await service.mock_shelly_sensor(db, days)
