@@ -109,3 +109,29 @@ async def mock_fluke1735(db: AsyncSession, n_days: int):
         )
         payload.append(record)
     return await create_sensor_records_bulk(db, payload)
+
+async def mock_shelly_sensor(db: AsyncSession, n_days: int):
+    np.random.seed(1337)
+    n_amostras = n_days * 24 * 60  
+    
+    ruido_consumo = np.random.normal(0, 0.05, n_amostras)
+    window = int(n_amostras / 10 / 2)
+    ruido_consumo = np.convolve(ruido_consumo, np.ones(window)/window, mode='same')
+    consumos = 1 + ruido_consumo
+    
+    payload = []
+    start_date = datetime.datetime.now()
+    
+    for i in range(len(consumos)):
+        record = schemas.SensorRecordCreateDTO(
+            sensor_model='Shelly EM',
+            measure_unit='kWh',
+            device='Disjuntor Geral',
+            location='Quadro de Energia',
+            data_type='Consumo de Energia',
+            data=round(float(consumos[i]), 5),
+            created_at=start_date + datetime.timedelta(minutes=i)
+        )
+        payload.append(record)
+    
+    return await create_sensor_records_bulk(db, payload)
