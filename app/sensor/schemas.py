@@ -8,6 +8,7 @@ class SensorRecordBaseSchema(BaseModel):
     id: UUID | None = None
     sensor_model: str
     measure_unit: str
+    device: str
     location: str
     data_type: str
     data: float
@@ -22,6 +23,21 @@ class SensorRecordBaseSchema(BaseModel):
 class SensorRecordCreateDTO(BaseModel):
     sensor_model: str
     measure_unit: str
+    device: str
+    location: str
+    data_type: str
+    data: float
+    created_at: datetime | None = None
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        
+class SensorRecordUpdateDTO(BaseModel):
+    sensor_model: str
+    measure_unit: str
+    device: str
     location: str
     data_type: str
     data: float

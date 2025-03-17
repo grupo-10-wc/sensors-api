@@ -9,6 +9,7 @@ class SensorRecord(Base):
     id = Column(GUID, primary_key=True, default=GUID_DEFAULT_SQLITE)
     sensor_model = Column(String, nullable=False)
     measure_unit = Column(String, nullable=False)
+    device = Column(String, nullable=False)
     location = Column(String, nullable=False, index=True)
     data_type = Column(String, nullable=False)
     data = Column(Float, nullable=False)
