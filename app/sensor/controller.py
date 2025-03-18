@@ -56,3 +56,9 @@ async def shelly_em(
     db: AsyncSession = Depends(get_db)
 ):
     return await service.mock_shelly_sensor(db, days)
+@router.get('/mock/pzem004t')
+async def mock_pzem004t(
+    minutes: int = 1,
+    db: AsyncSession = Depends(get_db)
+):
+    return await service.mock_pzem004t(db, minutes)

@@ -4,6 +4,7 @@ from . import models, schemas
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException, status
+import matplotlib.pyplot as plt
 
 
 
@@ -135,3 +136,49 @@ async def mock_shelly_sensor(db: AsyncSession, n_days: int):
         payload.append(record)
     
     return await create_sensor_records_bulk(db, payload)
+async def mock_pzem004t(db: AsyncSession, n_minutes: int, threshold: float = 5.0):
+    n_samples = n_minutes * 60 * 10  # 10 samples per second
+
+    np.random.seed(42)
+
+    # Generate smooth voltage variations with random noise
+    base_voltage = 220
+    noise = np.random.normal(0, 1, n_samples)
+    voltage_readings = base_voltage + noise
+
+    # Detect voltage oscillations
+    oscillations = []
+    for i in range(1, len(voltage_readings)):
+        if abs(voltage_readings[i] - voltage_readings[i - 1]) > threshold:
+            oscillations.append((i, voltage_readings[i]))
+
+    # Store readings in the database
+    payload = []
+    start_time = datetime.datetime.now()
+    for i, voltage in enumerate(voltage_readings):
+        record = schemas.SensorRecordCreateDTO(
+            sensor_model='PZEM-004T',
+            measure_unit='V',
+            device='Rede Elétrica',
+            location='Instalação',
+            data_type='Tensão',
+            data=voltage,
+            created_at=start_time + datetime.timedelta(seconds=i / 10)
+        )
+        payload.append(record)
+    await create_sensor_records_bulk(db, payload)
+
+    # Plot voltage readings
+    times = [start_time + datetime.timedelta(seconds=i / 10) for i in range(len(voltage_readings))]
+    plt.figure(figsize=(10, 5))
+    plt.plot(times, voltage_readings, label='Tensão (V)')
+    for osc in oscillations:
+        plt.axvline(x=times[osc[0]], color='r', linestyle='--', label='Oscilação' if osc == oscillations[0] else "")
+    plt.xlabel('Tempo')
+    plt.ylabel('Tensão (V)')
+    plt.title('Leituras de Tensão Simuladas e Oscilações Detectadas')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig('voltage_oscillations.png')
+
+    return {'status': 'success', 'oscillations': len(oscillations)}
